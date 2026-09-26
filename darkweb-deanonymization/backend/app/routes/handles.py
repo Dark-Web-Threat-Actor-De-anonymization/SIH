@@ -1,36 +1,104 @@
 from fastapi import APIRouter, HTTPException
-from app.crud import fetch_one, fetch_all
 
-router = APIRouter(prefix="/handles", tags=["Handles"])
+from app.crud import fetch_all, fetch_one
 
 
-# 🔹 Get all handles
-@router.get("/", summary="Get all handles")
+router = APIRouter(
+    prefix="/handles",
+    tags=["Handles"]
+)
+
+
+@router.get("/")
 def get_handles():
-    handles = fetch_all("SELECT * FROM handles")
-    return {"handles": handles}
+
+    handles = fetch_all(
+        """
+        SELECT
+            h.handle_id,
+            h.actor_id,
+            h.platform_id,
+            h.username,
+            h.first_seen,
+            h.last_seen,
+            h.source,
+            p.name AS platform_name
+        FROM handles h
+
+        LEFT JOIN platforms p
+            ON h.platform_id = p.platform_id
+
+        ORDER BY h.handle_id;
+        """
+    )
+
+    return {
+        "handles": handles
+    }
 
 
-# 🔹 Get handle by ID
-@router.get("/{handle_id}", summary="Get handle by ID")
+@router.get("/{handle_id}")
 def get_handle(handle_id: int):
+
     handle = fetch_one(
-        "SELECT handle_id, username, platform_id, actor_id FROM handles WHERE handle_id = %s",
+        """
+        SELECT
+            h.handle_id,
+            h.actor_id,
+            h.platform_id,
+            h.username,
+            h.first_seen,
+            h.last_seen,
+            h.source,
+            p.name AS platform_name
+        FROM handles h
+
+        LEFT JOIN platforms p
+            ON h.platform_id = p.platform_id
+
+        WHERE h.handle_id = %s;
+        """,
         (handle_id,)
     )
 
     if not handle:
-        raise HTTPException(status_code=404, detail="Handle not found")
 
-    return {"handle": handle}
+        raise HTTPException(
+            status_code=404,
+            detail="Handle not found"
+        )
+
+    return {
+        "handle": handle
+    }
 
 
-# 🔹 Get handles for an actor
-@router.get("/actor/{actor_id}", summary="Get handles by actor")
+@router.get("/actor/{actor_id}")
 def get_handles_by_actor(actor_id: int):
+
     handles = fetch_all(
-        "SELECT handle_id, username, platform_id FROM handles WHERE actor_id = %s",
+        """
+        SELECT
+            h.handle_id,
+            h.username,
+            h.platform_id,
+            h.first_seen,
+            h.last_seen,
+            h.source,
+            p.name AS platform_name
+        FROM handles h
+
+        LEFT JOIN platforms p
+            ON h.platform_id = p.platform_id
+
+        WHERE h.actor_id = %s
+
+        ORDER BY h.handle_id;
+        """,
         (actor_id,)
     )
 
-    return {"handles": handles}
+    return {
+        "actor_id": actor_id,
+        "handles": handles
+    }

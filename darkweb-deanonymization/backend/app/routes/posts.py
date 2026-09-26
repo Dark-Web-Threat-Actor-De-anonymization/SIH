@@ -1,28 +1,99 @@
 from fastapi import APIRouter, HTTPException
-from app.crud import fetch_all, fetch_one, execute_query
 
-router = APIRouter()
-
-@router.get("/posts/")
-def get_posts():
-    return fetch_all("SELECT * FROM posts")
+from app.crud import fetch_all, fetch_one
 
 
-@router.post("/posts/")
-def create_post(data: dict):
-    # ✅ validate handle exists
-    handle = fetch_one(
-        "SELECT * FROM handles WHERE handle_id = %s",
-        (data.get("handle_id"),)
+router = APIRouter(
+    prefix="/posts",
+    tags=["Posts"]
+)
+
+
+@router.get("/")
+def get_posts(
+    limit: int = 50
+):
+
+    limit = max(
+        1,
+        min(limit, 500)
     )
 
-    if not handle:
-        raise HTTPException(status_code=400, detail="Invalid handle_id")
+    posts = fetch_all(
+        f"""
+        SELECT
+            p.post_id,
+            p.thread_id,
+            p.handle_id,
+            h.username,
+            p.post_number,
+            p.content,
+            p.created_at,
+            p.source,
+            p.language,
+            t.title,
+            t.category,
+            t.forum_name
+        FROM posts p
 
-    # ✅ insert post
-    execute_query(
-        "INSERT INTO posts (handle_id, content) VALUES (%s, %s)",
-        (data.get("handle_id"), data.get("content"))
+        LEFT JOIN handles h
+            ON p.handle_id = h.handle_id
+
+        LEFT JOIN threads t
+            ON p.thread_id = t.thread_id
+
+        ORDER BY
+            p.created_at DESC NULLS LAST
+
+        LIMIT {limit};
+        """
     )
 
-    return {"message": "Post created successfully"}
+    return {
+        "posts": posts,
+        "count": len(posts)
+    }
+
+
+@router.get("/{post_id}")
+def get_post(post_id: str):
+
+    post = fetch_one(
+        """
+        SELECT
+            p.post_id,
+            p.thread_id,
+            p.handle_id,
+            h.username,
+            p.post_number,
+            p.content,
+            p.created_at,
+            p.source,
+            p.language,
+            p.content_hash,
+            t.title,
+            t.category,
+            t.forum_name
+        FROM posts p
+
+        LEFT JOIN handles h
+            ON p.handle_id = h.handle_id
+
+        LEFT JOIN threads t
+            ON p.thread_id = t.thread_id
+
+        WHERE p.post_id = %s;
+        """,
+        (post_id,)
+    )
+
+    if not post:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Post not found"
+        )
+
+    return {
+        "post": post
+    }

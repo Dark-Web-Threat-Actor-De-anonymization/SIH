@@ -1,21 +1,21 @@
-from pydantic import BaseModel
+from typing import Optional
 
-class ActorCreate(BaseModel):
-    name: str
-    risk_level: str
+from pydantic import BaseModel, Field
 
 
-class HandleCreate(BaseModel):
-    actor_id: int
-    platform_id: int
-    username: str
+class PostSearch(BaseModel):
+    query: str = Field(
+        ...,
+        min_length=1,
+        max_length=500
+    )
 
 
-class WalletCreate(BaseModel):
-    actor_id: int
-    wallet_address: str
+class SearchResponse(BaseModel):
+    query: str
+    results: list
 
 
-class PostCreate(BaseModel):
-    handle_id: int
-    content: str
+class HealthResponse(BaseModel):
+    status: str
+    database: str

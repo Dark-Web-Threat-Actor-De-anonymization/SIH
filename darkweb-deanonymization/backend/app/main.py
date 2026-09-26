@@ -1,9 +1,30 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import actors, handles, wallets, posts, connections, profile, search
+from app.config import (
+    APP_NAME,
+    APP_VERSION,
+)
 
-app = FastAPI(title="Dark Web Deanonymization API")
+from app.routes import (
+    actors,
+    handles,
+    intelligence,
+    posts,
+    profile,
+    search,
+)
+
+
+app = FastAPI(
+    title=APP_NAME,
+    version=APP_VERSION,
+    description=(
+        "Evidence-driven DarkForums behavioral "
+        "persona analysis API."
+    ),
+)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,14 +34,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ============================================================
+# API ROUTES
+# ============================================================
+
 app.include_router(search.router)
 app.include_router(profile.router)
 app.include_router(actors.router)
 app.include_router(handles.router)
-app.include_router(wallets.router)
 app.include_router(posts.router)
-app.include_router(connections.router)
+app.include_router(intelligence.router)
+
+
+# ============================================================
+# HEALTH
+# ============================================================
 
 @app.get("/")
 def home():
-    return {"message": "API Running 🚀"}
+
+    return {
+        "message": "DarkTrace Intelligence API Running",
+        "version": APP_VERSION,
+    }
+
+
+@app.get("/health")
+def health():
+
+    return {
+        "status": "ok",
+        "database": "PostgreSQL"
+    }

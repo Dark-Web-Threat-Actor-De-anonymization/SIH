@@ -1,0 +1,28 @@
+# Environment
+.env
+.env.*
+
+# Dataset
+darkweb-deanonymization/data/safe_corpus.jsonl
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc

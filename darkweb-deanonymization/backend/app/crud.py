@@ -1,52 +1,86 @@
-﻿from app.database import get_connection
+﻿from typing import Any, Dict, List, Optional
+
 from psycopg2.extras import RealDictCursor
-from typing import Optional, Any, List, Dict
 
-def fetch_all(query: str, params: Optional[tuple]=None) -> List[Dict[str, Any]]:
+from app.database import get_connection
+
+
+def fetch_all(
+    query: str,
+    params: Optional[tuple] = None
+) -> List[Dict[str, Any]]:
+    """
+    Execute a SELECT query and return all rows as dictionaries.
+    """
+
     conn = get_connection()
+
     try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(query, params)
-            rows = cur.fetchall()
-            return [dict(r) for r in rows]
+        with conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cursor:
+
+            cursor.execute(query, params)
+
+            return [
+                dict(row)
+                for row in cursor.fetchall()
+            ]
+
     finally:
         conn.close()
 
-def fetch_one(query: str, params: Optional[tuple]=None) -> Optional[Dict[str, Any]]:
+
+def fetch_one(
+    query: str,
+    params: Optional[tuple] = None
+) -> Optional[Dict[str, Any]]:
+    """
+    Execute a SELECT query and return one row.
+    """
+
     conn = get_connection()
+
     try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(query, params)
-            row = cur.fetchone()
+        with conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cursor:
+
+            cursor.execute(query, params)
+
+            row = cursor.fetchone()
+
             return dict(row) if row else None
+
     finally:
         conn.close()
 
-def execute_query(query: str, params: Optional[tuple]=None) -> None:
+
+def execute_query(
+    query: str,
+    params: Optional[tuple] = None
+) -> None:
+    """
+    Execute a write query and commit.
+    """
+
     conn = get_connection()
+
     try:
-        with conn.cursor() as cur:
-            cur.execute(query, params)
+        with conn.cursor() as cursor:
+
+            cursor.execute(
+                query,
+                params
+            )
+
         conn.commit()
-    finally:
-        conn.close()
 
-def fetch_all_with_values(query: str, params: Optional[tuple]=None) -> List[Dict[str, Any]]:
-    """
-    Executes a query that RETURNS rows (e.g. INSERT ... RETURNING *) and returns them.
-    Commits transaction on success.
-    """
-    conn = get_connection()
-    try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(query, params)
-            try:
-                rows = cur.fetchall()
-                conn.commit()
-                return [dict(r) for r in rows]
-            except Exception:
-                # Query returned no rows
-                conn.commit()
-                return []
+    except Exception:
+
+        conn.rollback()
+
+        raise
+
     finally:
         conn.close()
