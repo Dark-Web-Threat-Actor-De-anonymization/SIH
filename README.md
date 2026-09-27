@@ -23,27 +23,96 @@ A FastAPI-based backend system for analyzing relationships between actors, handl
 - Uvicorn
 
 ---
+##  Project Architecture
 
-## Project Structure
+> **DarkTrace** transforms scattered threat-intelligence data into structured,
+> searchable intelligence for cyber investigations.
 
-backend/
-│── app/
-│   ├── main.py
-│   ├── database.py
-│   ├── crud.py
-│   ├── routes/
-│   │   ├── actors.py
-│   │   ├── handles.py
-│   │   ├── wallets.py
-│   │   ├── posts.py
-│   │   ├── connections.py
-│   │   ├── profile.py
-│   │   └── search.py
+```text
+                          DARKTRACE
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │      main.py     │
+                    │  FastAPI Engine  │
+                    └────────┬─────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              ▼              ▼              ▼
+         DATABASE          CRUD          CONNECTION
+       database.py       crud.py        connection.py
+              │              │              │
+              └──────────────┼──────────────┘
+                             │
+                             ▼
+                    ┌────────────────┐
+                    │     ROUTES    │
+                    └───────┬────────┘
+                            │
+          ┌─────────────────┼─────────────────┐
+          │                 │                 │
+          ▼                 ▼                 ▼
+       ACTORS            HANDLES           WALLETS
+     actors.py         handles.py         wallets.py
+          │                 │                 │
+          └──────────┐      │      ┌──────────┘
+                     ▼      ▼      ▼
+                   POSTS    PROFILE
+                 posts.py  profile.py
+                       \      /
+                        \    /
+                         ▼  ▼
+                        SEARCH
+                     search.py
+                         │
+                         ▼
+                   Intelligence
+                     Results
+```
+
+###  Repository Blueprint
+
+ backend
 │
-│── requirements.txt
-│── README.md
-
----
+├──  app
+│   │
+│   ├──  main.py
+│   │      └── Application Entry Point
+│   │
+│   ├──  database.py
+│   │      └── Database Configuration
+│   │
+│   ├──  crud.py
+│   │      └── CRUD Operations
+│   │
+│   ├──  connection.py
+│   │      └── Database Connectivity
+│   │
+│   └──  routes
+│       │
+│       ├──  actors.py
+│       │      └── Threat Actor Intelligence
+│       │
+│       ├──  handles.py
+│       │      └── Handle / Alias Analysis
+│       │
+│       ├──  wallets.py
+│       │      └── Cryptocurrency Wallet Intelligence
+│       │
+│       ├── posts.py
+│       │      └── Post & Content Analysis
+│       │
+│       ├──  profile.py
+│       │      └── Actor Profile Generation
+│       │
+│       └──  search.py
+│              └── Investigation & Search Engine
+│
+├──  requirements.txt
+│      └── Python Dependencies
+│
+└──  README.md
+       └── Project Documentation
 
 ## Setup
 
