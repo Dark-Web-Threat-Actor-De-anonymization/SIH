@@ -1,5 +1,15 @@
-﻿fastapi
+﻿# DarkTrace Intelligence - Python backend dependencies
+
+fastapi
 uvicorn
 psycopg2-binary
 pydantic
 python-dotenv
+
+# AI / ML and data analysis
+numpy
+pandas
+scikit-learn
+
+# Blockchain integration
+web3

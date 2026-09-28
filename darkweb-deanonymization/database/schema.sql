@@ -4,6 +4,9 @@
 -- ============================================
 
 -- Drop existing tables in dependency order
+DROP TABLE IF EXISTS blockchain_evidence CASCADE;
+DROP TABLE IF EXISTS post_cluster_assignments CASCADE;
+DROP TABLE IF EXISTS behavioral_clusters CASCADE;
 DROP TABLE IF EXISTS persona_relationships CASCADE;
 DROP TABLE IF EXISTS persona_features CASCADE;
 DROP TABLE IF EXISTS evidence CASCADE;
@@ -12,7 +15,6 @@ DROP TABLE IF EXISTS threads CASCADE;
 DROP TABLE IF EXISTS handles CASCADE;
 DROP TABLE IF EXISTS platforms CASCADE;
 DROP TABLE IF EXISTS actors CASCADE;
-
 
 -- ============================================
 -- 1. ACTORS / PERSONAS
@@ -215,4 +217,83 @@ CREATE TABLE persona_relationships (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE(actor_a_id, actor_b_id)
+);
+-- ============================================
+-- 9. BEHAVIORAL CLUSTERS
+-- ============================================
+
+CREATE TABLE behavioral_clusters (
+    cluster_id SERIAL PRIMARY KEY,
+
+    cluster_name TEXT NOT NULL,
+
+    cluster_size INT DEFAULT 0,
+
+    avg_post_length FLOAT,
+
+    avg_sentence_length FLOAT,
+
+    vocabulary_size FLOAT,
+
+    punctuation_rate FLOAT,
+
+    avg_word_length FLOAT,
+
+    dominant_category TEXT,
+
+    dominant_forum TEXT,
+
+    representative_keywords TEXT,
+
+    actor_id INT REFERENCES actors(actor_id)
+        ON DELETE CASCADE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ============================================
+-- 10. POST CLUSTER ASSIGNMENTS
+-- ============================================
+
+CREATE TABLE post_cluster_assignments (
+    assignment_id SERIAL PRIMARY KEY,
+
+    post_id TEXT UNIQUE
+        REFERENCES posts(post_id)
+        ON DELETE CASCADE,
+
+    cluster_id INT
+        REFERENCES behavioral_clusters(cluster_id)
+        ON DELETE CASCADE,
+
+    similarity_score FLOAT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- ============================================
+-- 11. BLOCKCHAIN EVIDENCE REGISTRY
+-- ============================================
+
+CREATE TABLE blockchain_evidence (
+    blockchain_evidence_id SERIAL PRIMARY KEY,
+
+    evidence_id INT NOT NULL UNIQUE
+        REFERENCES evidence(evidence_id)
+        ON DELETE CASCADE,
+
+    evidence_hash CHAR(64) NOT NULL,
+
+    blockchain_network TEXT NOT NULL
+        DEFAULT 'hardhat-local',
+
+    transaction_hash TEXT NOT NULL,
+
+    block_number BIGINT,
+
+    registered_at TIMESTAMP
+        DEFAULT CURRENT_TIMESTAMP,
+
+    verification_status TEXT NOT NULL
+        DEFAULT 'REGISTERED'
 );

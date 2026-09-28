@@ -8,6 +8,7 @@ from app.config import (
 
 from app.routes import (
     actors,
+    blockchain,
     handles,
     intelligence,
     posts,
@@ -45,6 +46,7 @@ app.include_router(actors.router)
 app.include_router(handles.router)
 app.include_router(posts.router)
 app.include_router(intelligence.router)
+app.include_router(blockchain.router)
 
 
 # ============================================================
